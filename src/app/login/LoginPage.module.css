@@ -44,7 +44,7 @@
   height: 54px;
   border: 1px solid #e2e2e2;
   border-radius: 8px;
-
+  background-color: white;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -54,8 +54,9 @@
 
 /* 아이콘 */
 .icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  margin-right: 5px;
 }
 
 /* input 스타일 */

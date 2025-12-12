@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import styles from "./LoginPage.module.css";
 import Popup from "./components/Popup";
 
@@ -9,18 +10,34 @@ export default function LoginPage() {
   const [id, setId] = useState("");
   const [pw, setPw] = useState("");
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
+  const [loginSuccess, setLoginSuccess] = useState(false);
+
+  const router = useRouter();
 
   const handleLogin = () => {
-    // 예시용: 아이디 test / 비번 1234일 때 성공
     const isValid = id === "test" && pw === "1234";
 
     if (!isValid) {
       setPopupMessage("아이디/비밀번호를 다시 확인해주세요.");
+      setLoginSuccess(false);
       return;
     }
 
-    // 성공 → 유저 닉네임 예시 "예린"
+    // 로그인 성공
+    localStorage.setItem(
+      "user",
+      JSON.stringify({ id, nickname: id }) // 닉네임 예시로 id 넣음
+    );
+
     setPopupMessage(`${id}님, 로그인이 완료되었습니다!`);
+    setLoginSuccess(true);
+  };
+
+  const handlePopupClose = () => {
+    setPopupMessage(null);
+    if (loginSuccess) {
+      router.push("/home"); // 로그인 성공 후 이동
+    }
   };
 
   return (
@@ -31,7 +48,6 @@ export default function LoginPage() {
       <div className={styles.divider} />
 
       <div className={styles.formBox}>
-        {/* 아이디 */}
         <div className={styles.inputWrapper}>
           <img src="/icon/profile-gray-icon.svg" className={styles.icon} />
           <input
@@ -43,7 +59,6 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* 비밀번호 */}
         <div className={styles.inputWrapper}>
           <img src="/icon/lock-icon.svg" className={styles.icon} />
           <input
@@ -55,12 +70,10 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* 로그인 버튼 */}
         <button className={styles.loginButton} onClick={handleLogin}>
           로그인
         </button>
 
-        {/* 회원가입 */}
         <div className={styles.signupWrapper}>
           <span className={styles.noAccount}>계정이 없으신가요?</span>
           <Link href="/signup" className={styles.signupLink}>
@@ -69,9 +82,8 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* 팝업 */}
       {popupMessage && (
-        <Popup message={popupMessage} onClose={() => setPopupMessage(null)} />
+        <Popup message={popupMessage} onClose={handlePopupClose} />
       )}
     </div>
   );
