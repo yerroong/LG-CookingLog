@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./write.module.css";
 
@@ -19,11 +19,6 @@ interface RecipeFormData {
 
 const categories = ["한식", "양식", "중식", "일식", "분식", "디저트"];
 
-// 임시 사용자 정보 (실제로는 로그인 정보에서 가져옴)
-const currentUser = {
-  nickname: "요리왕",
-};
-
 export default function RecipeWritePage() {
   const router = useRouter();
   const [formData, setFormData] = useState<RecipeFormData>({
@@ -35,8 +30,28 @@ export default function RecipeWritePage() {
     seasonings: [],
     tags: [],
     rating: 5, // 기본값
-    userNickname: currentUser.nickname,
+    userNickname: "",
   });
+
+  // 로그인한 사용자 정보 가져오기
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const data = JSON.parse(userData);
+      console.log("로그인 데이터:", data); // 디버깅용
+      // {token, user: {nickname, ...}} 구조
+      const nickname = data.user?.nickname || data.nickname || "";
+      console.log("닉네임:", nickname); // 디버깅용
+      setFormData((prev) => ({
+        ...prev,
+        userNickname: nickname,
+      }));
+    } else {
+      // 로그인 안 된 경우 로그인 페이지로 이동
+      alert("로그인이 필요합니다.");
+      router.push("/login");
+    }
+  }, [router]);
 
   // 입력 필드 상태
   const [mainIngredientInput, setMainIngredientInput] = useState("");
@@ -179,6 +194,10 @@ export default function RecipeWritePage() {
 
       console.log("백엔드로 전송할 데이터:", submitData);
 
+      // 토큰 가져오기
+      const userData = localStorage.getItem("user");
+      const token = userData ? JSON.parse(userData).token : "";
+
       // API 호출
       const response = await fetch(
         "https://after-ungratifying-lilyanna.ngrok-free.dev/api/posts",
@@ -187,6 +206,7 @@ export default function RecipeWritePage() {
           headers: {
             "Content-Type": "application/json",
             "ngrok-skip-browser-warning": "true",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(submitData),
         }
