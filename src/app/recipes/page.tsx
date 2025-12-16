@@ -382,11 +382,12 @@ export default function RecipesPage() {
 
         {/* 레시피 그리드 */}
         <div className={styles.recipeGrid}>
-          {currentRecipes.map((recipe) => (
+          {currentRecipes.map((recipe, index) => (
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
               onHashtagClick={handleHashtagClick}
+              index={index}
             />
           ))}
         </div>

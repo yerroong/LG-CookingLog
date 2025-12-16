@@ -11,6 +11,29 @@
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
+
+    /* 초기 상태: 아래쪽에 숨겨져 있고 투명함 */
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+    animation: slideUpFadeIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* 아래에서 위로 올라오는 애니메이션 */
+@keyframes slideUpFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+
+    60% {
+        opacity: 0.8;
+        transform: translateY(-5px) scale(1.02);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .recipeCardLink:hover .recipeCard {

@@ -17,15 +17,22 @@ interface Recipe {
 interface RecipeCardProps {
   recipe: Recipe;
   onHashtagClick: (hashtag: string) => void;
+  index?: number; // 애니메이션 지연을 위한 인덱스
 }
 
 export default function RecipeCard({
   recipe,
   onHashtagClick,
+  index = 0,
 }: RecipeCardProps) {
   return (
     <Link href={`/recipes/${recipe.id}`} className={styles.recipeCardLink}>
-      <div className={styles.recipeCard}>
+      <div
+        className={styles.recipeCard}
+        style={{
+          animationDelay: `${index * 0.1}s`, // 각 카드마다 0.1초씩 지연
+        }}
+      >
         <div className={styles.imageContainer}>
           <Image
             src={recipe.image}
