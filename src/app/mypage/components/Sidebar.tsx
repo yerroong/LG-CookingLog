@@ -86,7 +86,7 @@ const Sidebar = () => {
 
           <button
             className={`${css.actionButton} ${css.logoutButton}`}
-            onClick={() => router.push('/mypage')}
+            onClick={() => router.push('/mypage/edit')}
           >
             회원정보 수정
           </button>
