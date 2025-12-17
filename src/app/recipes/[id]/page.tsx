@@ -569,7 +569,11 @@ export default function RecipeDetailPage() {
         <div className={styles.imageSection}>
           {recipe.imageUrl ? (
             <img
-              src={recipe.imageUrl}
+              src={
+                recipe.imageUrl && recipe.imageUrl.startsWith("/uploads")
+                  ? `https://after-ungratifying-lilyanna.ngrok-free.dev${recipe.imageUrl}`
+                  : recipe.imageUrl
+              }
               alt={recipe.title}
               className={styles.recipeImage}
             />
