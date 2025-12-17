@@ -196,3 +196,13 @@
   font-weight: 600;
   background-color: #F36E5C;
 }
+
+.cancelBtn:hover {
+  background-color: #F8F8FF;
+  transition: background-color 0.3s ease;
+}
+
+.saveBtn:hover {
+  background-color: #FF6060;
+  transition: background-color 0.3s ease;
+}

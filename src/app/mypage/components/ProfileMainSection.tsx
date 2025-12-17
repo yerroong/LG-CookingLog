@@ -68,9 +68,20 @@ const ProfileMainSection = () => {
         imageFile: fileInputRef.current?.files?.[0],
       });
 
+      // 상태 갱신
       setOriginal(res);
       setForm(res);
       setPreview(res.imageUrl);
+
+      localStorage.setItem(
+        'profileSummary',
+        JSON.stringify({
+          imageUrl: res.imageUrl,
+          bio: res.bio,
+        })
+      );
+
+      window.dispatchEvent(new Event('profileUpdated'));
 
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -82,6 +93,7 @@ const ProfileMainSection = () => {
       alert('저장에 실패했습니다');
     }
   };
+
 
   const handleCancel = () => {
     if (!original) return;
