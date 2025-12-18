@@ -1,5 +1,19 @@
 .section {
   padding: 60px 60px;
+  opacity: 0;
+  transform: translateY(20px) scale(0.98);
+  animation: slideUpFadeIn 1s ease-out 0.5s forwards;
+}
+
+@keyframes slideUpFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .header {
@@ -7,6 +21,8 @@
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
 .label {
@@ -48,8 +64,44 @@
 .grid {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 30px;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 큰 화면에서 4개 카드가 적절한 크기로 */
+@media (min-width: 1600px) {
+  .grid {
+    max-width: 1600px;
+    gap: 35px;
+  }
+  
+  .section {
+    padding: 60px 80px;
+  }
+  
+  .header {
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* 중간 크기 화면 */
+@media (min-width: 1200px) and (max-width: 1599px) {
+  .section {
+    padding: 60px 70px;
+  }
+}
+
+.noResults {
+  margin-top: 20px;
+  text-align: left;
+  padding: 40px 0;
+  color: #999;
+  font-size: 16px;
 }
 
 /* 반응형 */
@@ -68,7 +120,7 @@
   }
 
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 25px;
   }
 }
@@ -79,9 +131,9 @@
   }
 
   .header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
   }
 
   .label {
@@ -95,12 +147,27 @@
   .moreButton {
     font-size: 12px;
     padding: 8px 16px;
+    margin-left: auto;
   }
 
   .grid {
     margin-top: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
+  }
+}
+
+@media (max-width: 650px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .moreButton {
+    margin-left: 0;
+    align-self: stretch;
+    text-align: center;
   }
 }
 
