@@ -27,11 +27,9 @@ export default function HeroSlider() {
     const interval = setInterval(() => {
       slider.scrollLeft += 0.5;
 
-      // 끝까지 가면 다시 처음처럼
-      if (
-        slider.scrollLeft >=
-        slider.scrollWidth - slider.clientWidth
-      ) {
+      // 중간 지점에 도달하면 처음으로 리셋 (무한 루프 효과)
+      const halfWidth = slider.scrollWidth / 2;
+      if (slider.scrollLeft >= halfWidth) {
         slider.scrollLeft = 0;
       }
     }, 18);
@@ -47,6 +45,12 @@ export default function HeroSlider() {
     );
   }
 
+  // 이미지 배열 (2번 복제하여 무한 루프 효과)
+  const slides = Array.from({ length: 10 }).map((_, index) => ({
+    src: `/images/hero-slide${index + 1}.jpeg`,
+    alt: `hero-slide-${index + 1}`,
+  }));
+
   return (
     <div className={styles.wrapper}>
       <button
@@ -57,13 +61,25 @@ export default function HeroSlider() {
       </button>
 
       <div className={styles.slider} ref={sliderRef}>
-        {Array.from({ length: 10 }).map((_, index) => (
+        {/* 원본 슬라이드 */}
+        {slides.map((slide, index) => (
           <Image
-            key={index}
-            src={`/images/hero-slide${index + 1}.jpeg`}
-            alt={`hero-slide-${index}`}
-            width={300}
-            height={200}
+            key={`original-${index}`}
+            src={slide.src}
+            alt={slide.alt}
+            width={320}
+            height={210}
+            className={styles.slide}
+          />
+        ))}
+        {/* 복제된 슬라이드 (무한 루프용) */}
+        {slides.map((slide, index) => (
+          <Image
+            key={`clone-${index}`}
+            src={slide.src}
+            alt={`${slide.alt}-clone`}
+            width={320}
+            height={210}
             className={styles.slide}
           />
         ))}

@@ -1,9 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import styles from "./Signup.module.css";
 import Popup from "../login/components/Popup";
+import SignupForm from "./components/SignupForm";
 import { useRouter } from "next/navigation";
+import {
+  formatPhoneNumber,
+  checkUserIdDuplicate,
+  checkNicknameDuplicate,
+  signupUser,
+  validateUserId,
+  validatePassword,
+} from "./utils/signupUtils";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -15,14 +24,78 @@ export default function SignupPage() {
   const [passwordCheck, setPasswordCheck] = useState("");
 
   const [popupMessage, setPopupMessage] = useState<string | null>(null);
+  const [isUserIdChecked, setIsUserIdChecked] = useState(false);
+  const [isCheckingUserId, setIsCheckingUserId] = useState(false);
+  const [isNicknameChecked, setIsNicknameChecked] = useState(false);
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
+  const [passwordMatch, setPasswordMatch] = useState<boolean | null>(null);
+  const [phoneNumberError, setPhoneNumberError] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
+  const [userIdValidation, setUserIdValidation] = useState({
+    hasEnglish: false,
+    isLongEnough: false,
+    isValid: false,
+  });
+  const [passwordValidation, setPasswordValidation] = useState({
+    hasUpperCase: false,
+    hasSpecialChar: false,
+    validLength: false,
+    isValid: false,
+  });
 
-  // 전화번호 하이픈 자동 입력 함수
-  const formatPhoneNumber = (value: string) => {
-    const onlyNums = value.replace(/[^0-9]/g, "");
+  // 아이디 중복 확인
+  const handleCheckUserId = async () => {
+    if (!userId) {
+      setPopupMessage("아이디를 입력해주세요.");
+      return;
+    }
 
-    if (onlyNums.length < 4) return onlyNums;
-    if (onlyNums.length < 8) return `${onlyNums.slice(0, 3)}-${onlyNums.slice(3)}`;
-    return `${onlyNums.slice(0, 3)}-${onlyNums.slice(3, 7)}-${onlyNums.slice(7, 11)}`;
+    // 아이디 유효성 검사
+    const validation = validateUserId(userId);
+    if (!validation.isValid) {
+      setPopupMessage("아이디는 영어를 포함하여 5자 이상이어야 합니다.");
+      return;
+    }
+
+    setIsCheckingUserId(true);
+    const result = await checkUserIdDuplicate(userId);
+    setIsCheckingUserId(false);
+
+    setPopupMessage(result.message);
+    setIsUserIdChecked(result.success);
+  };
+
+  // 아이디 변경 핸들러
+  const handleUserIdChange = (value: string) => {
+    setUserId(value);
+    setIsUserIdChecked(false);
+    setUserIdValidation(validateUserId(value));
+  };
+
+  // 닉네임 중복 확인
+  const handleCheckNickname = async () => {
+    if (!nickname) {
+      setPopupMessage("닉네임을 입력해주세요.");
+      return;
+    }
+
+    setIsCheckingNickname(true);
+    const result = await checkNicknameDuplicate(nickname);
+    setIsCheckingNickname(false);
+
+    setPopupMessage(result.message);
+    setIsNicknameChecked(result.success);
+  };
+
+  // 비밀번호 변경 핸들러
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    setPasswordValidation(validatePassword(value));
+    if (value && passwordCheck) {
+      setPasswordMatch(value === passwordCheck);
+    } else {
+      setPasswordMatch(null);
+    }
   };
 
   // 회원가입 요청
@@ -32,60 +105,66 @@ export default function SignupPage() {
       return;
     }
 
+    // 아이디 유효성 검사
+    const validation = validateUserId(userId);
+    if (!validation.isValid) {
+      setPopupMessage("아이디는 영어를 포함하여 5자 이상이어야 합니다.");
+      return;
+    }
+
+    if (!isUserIdChecked) {
+      setPopupMessage("아이디 중복 확인을 해주세요.");
+      return;
+    }
+
+    if (!isNicknameChecked) {
+      setPopupMessage("닉네임 중복 확인을 해주세요.");
+      return;
+    }
+
+    // 비밀번호 유효성 검사
+    const passwordVal = validatePassword(password);
+    if (!passwordVal.isValid) {
+      setPopupMessage("비밀번호는 대문자, 특수문자를 포함하여 8~20자 이내여야 합니다.");
+      return;
+    }
+
     if (password !== passwordCheck) {
       setPopupMessage("비밀번호가 일치하지 않습니다.");
       return;
     }
 
-    const signupData = {
+    const result = await signupUser({
       userId,
       nickname,
       phoneNumber,
       password,
-    };
+    });
 
-    console.log("회원가입 요청:", signupData);
-
-    try {
-      const response = await fetch(
-        "https://after-ungratifying-lilyanna.ngrok-free.dev/api/users",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "ngrok-skip-browser-warning": "true",
-          },
-          body: JSON.stringify(signupData),
-        }
-      );
-
-      let responseData = null;
-
-      try {
-        responseData = await response.json();
-      } catch {
-        // JSON 이 아닐 수 있음
-      }
-
-      if (response.ok) {
-        setPopupMessage("회원가입이 완료되었습니다!");
-      } else {
-        console.error("회원가입 실패:", response.status, responseData);
-
-        setPopupMessage(
-          responseData?.message
-            ? `회원가입 실패: ${responseData.message}`
-            : "회원가입에 실패했습니다."
-        );
-      }
-    } catch (error) {
-      console.error("서버 요청 오류:", error);
-      setPopupMessage("서버와 연결할 수 없습니다.");
-    }
+    setPopupMessage(result.message);
+    setSignupSuccess(result.success);
   };
 
   const handlePopupClose = () => {
     setPopupMessage(null);
+
+    // 회원가입 성공 시에만 로그인 페이지로 이동
+    if (signupSuccess) {
+      router.push("/login");
+    }
+  };
+
+  // 전화번호 유효성 체크
+  const handleCheckPhoneNumber = () => {
+    if (phoneNumber && phoneNumber.replace(/-/g, "").length < 11) {
+      setPhoneNumberError(true);
+      setTimeout(() => setPhoneNumberError(false), 3000);
+    }
+  };
+
+  // 전화번호 포맷 적용
+  const handlePhoneNumberChange = (value: string) => {
+    setPhoneNumber(formatPhoneNumber(value));
   };
 
   return (
@@ -95,78 +174,33 @@ export default function SignupPage() {
 
       <div className={styles.divider}></div>
 
-      <div className={styles.formBox}>
-        {/* 아이디 */}
-        <div className={styles.row}>
-          <div className={styles.inputWrapper} style={{ flex: 1 }}>
-            <input
-              type="text"
-              placeholder="아이디 입력"
-              className={styles.input}
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-            />
-            <img src="/icon/profile-gray-icon.svg" className={styles.icon} />
-          </div>
-
-          <button className={styles.checkButton} onClick={() => {}}>
-            중복확인
-          </button>
-        </div>
-
-        {/* 닉네임 */}
-        <div className={styles.inputWrapper}>
-          <input
-            type="text"
-            placeholder="닉네임 입력"
-            className={styles.input}
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-          />
-          <img src="/icon/profile-gray-icon.svg" className={styles.icon} />
-        </div>
-
-        {/* 전화번호 */}
-        <div className={styles.inputWrapper}>
-          <input
-            type="text"
-            placeholder="010-1234-5678"
-            className={styles.input}
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(formatPhoneNumber(e.target.value))}
-            maxLength={13}
-          />
-          <img src="/icon/phone-icon.svg" className={styles.icon} />
-        </div>
-
-        {/* 비밀번호 */}
-        <div className={styles.inputWrapper}>
-          <input
-            type="password"
-            placeholder="비밀번호 입력"
-            className={styles.input}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <img src="/icon/lock-icon.svg" className={styles.icon} />
-        </div>
-
-        {/* 비밀번호 확인 */}
-        <div className={styles.inputWrapper}>
-          <input
-            type="password"
-            placeholder="비밀번호 재입력"
-            className={styles.input}
-            value={passwordCheck}
-            onChange={(e) => setPasswordCheck(e.target.value)}
-          />
-          <img src="/icon/lock-icon.svg" className={styles.icon} />
-        </div>
-
-        <button className={styles.signupButton} onClick={handleSignup}>
-          회원가입
-        </button>
-      </div>
+      <SignupForm
+        userId={userId}
+        setUserId={handleUserIdChange}
+        nickname={nickname}
+        setNickname={setNickname}
+        phoneNumber={phoneNumber}
+        setPhoneNumber={handlePhoneNumberChange}
+        password={password}
+        setPassword={handlePasswordChange}
+        passwordCheck={passwordCheck}
+        setPasswordCheck={setPasswordCheck}
+        isUserIdChecked={isUserIdChecked}
+        setIsUserIdChecked={setIsUserIdChecked}
+        isCheckingUserId={isCheckingUserId}
+        isNicknameChecked={isNicknameChecked}
+        setIsNicknameChecked={setIsNicknameChecked}
+        isCheckingNickname={isCheckingNickname}
+        passwordMatch={passwordMatch}
+        setPasswordMatch={setPasswordMatch}
+        phoneNumberError={phoneNumberError}
+        userIdValidation={userIdValidation}
+        passwordValidation={passwordValidation}
+        onCheckUserId={handleCheckUserId}
+        onCheckNickname={handleCheckNickname}
+        onCheckPhoneNumber={handleCheckPhoneNumber}
+        onSignup={handleSignup}
+      />
 
       {popupMessage && (
         <Popup message={popupMessage} onClose={handlePopupClose} />

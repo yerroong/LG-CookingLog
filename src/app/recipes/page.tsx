@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./recipes.module.css";
 import RecipeCard from "./components/RecipeCard";
+import RecipeCardSkeleton from "./components/RecipeCardSkeleton";
 import SearchBar from "./components/SearchBar";
 import CategoryDropdown from "./components/CategoryDropdown";
 
@@ -213,7 +215,93 @@ export default function RecipesPage() {
   const [selectedHashtag, setSelectedHashtag] = useState("");
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [animationKey, setAnimationKey] = useState(0); // 애니메이션 재트리거용
+  const [recipeRatings, setRecipeRatings] = useState<{ [key: number]: number }>(
+    {}
+  ); // 레시피별 평균 별점
+  const [showLikedOnly, setShowLikedOnly] = useState(false); // 좋아요한 게시글만 보기
+  const [likedRecipes, setLikedRecipes] = useState<number[]>([]); // 좋아요한 게시글 ID 목록
+  const [sortType, setSortType] = useState<"latest" | "likes">("latest"); // 정렬 타입
   const recipesPerPage = 9;
+
+  // 댓글 타입 정의 (간단 버전)
+  interface SimpleComment {
+    rating: number;
+    parentCommentId: number | null;
+  }
+
+  // 댓글 기반 평균 별점 계산 함수 (대댓글 제외)
+  const calculateAverageRating = useCallback((comments: SimpleComment[]) => {
+    if (!comments || comments.length === 0) {
+      return 0;
+    }
+
+    // 대댓글이 아닌 일반 댓글만 필터링 (parentCommentId가 null인 것)
+    const mainComments = comments.filter(
+      (comment) => comment.parentCommentId === null && comment.rating > 0
+    );
+
+    if (mainComments.length === 0) {
+      return 0;
+    }
+
+    const sum = mainComments.reduce((acc, comment) => acc + comment.rating, 0);
+    return Math.round((sum / mainComments.length) * 10) / 10;
+  }, []);
+
+  // 개별 레시피의 댓글 평균 별점 가져오기
+  const fetchRecipeRating = useCallback(
+    async (recipeId: number) => {
+      try {
+        const response = await fetch(
+          `https://after-ungratifying-lilyanna.ngrok-free.dev/api/posts/${recipeId}/comments`,
+          {
+            headers: {
+              "ngrok-skip-browser-warning": "true",
+            },
+          }
+        );
+        if (response.ok) {
+          const comments: SimpleComment[] = await response.json();
+          const avgRating = calculateAverageRating(comments);
+          setRecipeRatings((prev) => ({
+            ...prev,
+            [recipeId]: avgRating,
+          }));
+        }
+      } catch (error) {
+        console.error(`레시피 ${recipeId} 별점 조회 실패:`, error);
+      }
+    },
+    [calculateAverageRating]
+  );
+
+  // 좋아요한 게시글 목록 가져오기
+  const fetchLikedRecipes = useCallback(async () => {
+    try {
+      const userData = localStorage.getItem("user");
+      if (!userData) return;
+
+      const token = localStorage.getItem("token"); // 토큰은 별도 키로 저장됨
+      const response = await fetch(
+        "https://after-ungratifying-lilyanna.ngrok-free.dev/api/likes/my-likes",
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const likedPosts: Recipe[] = await response.json();
+        const likedIds = likedPosts.map((post) => post.id);
+        setLikedRecipes(likedIds);
+      }
+    } catch (error) {
+      console.error("좋아요한 게시글 목록 조회 실패:", error);
+    }
+  }, []);
 
   // 백엔드에서 레시피 목록 가져오기
   useEffect(() => {
@@ -229,8 +317,15 @@ export default function RecipesPage() {
         );
         if (response.ok) {
           const data: Recipe[] = await response.json();
+          console.log("레시피 목록 원본 데이터:", data); // 디버깅용
           const transformedRecipes = data.map(transformRecipe);
+          console.log("변환된 레시피 데이터:", transformedRecipes); // 디버깅용
           setRecipes(transformedRecipes);
+
+          // 각 레시피의 댓글 기반 평균 별점 가져오기
+          transformedRecipes.forEach((recipe) => {
+            fetchRecipeRating(recipe.id);
+          });
         }
       } catch (error) {
         console.error("레시피 목록 조회 실패:", error);
@@ -240,30 +335,54 @@ export default function RecipesPage() {
     };
 
     fetchRecipes();
-  }, []);
+    fetchLikedRecipes(); // 좋아요한 게시글 목록도 함께 가져오기
+  }, [fetchRecipeRating, fetchLikedRecipes]);
 
   // 검색 및 필터링 로직
-  const filteredRecipes = recipes.filter((recipe) => {
-    // 해시태그 필터링 (해시태그가 선택된 경우)
-    if (selectedHashtag) {
-      const matchesHashtag = recipe.hashtags.includes(selectedHashtag);
+  const filteredRecipes = recipes
+    .filter((recipe) => {
+      // 좋아요한 게시글만 보기 필터링
+      if (showLikedOnly && !likedRecipes.includes(recipe.id)) {
+        return false;
+      }
+
+      // 해시태그 필터링 (해시태그가 선택된 경우)
+      if (selectedHashtag) {
+        const matchesHashtag = recipe.hashtags.includes(selectedHashtag);
+        const matchesCategory =
+          selectedCategory === "전체 보기" ||
+          recipe.category === selectedCategory;
+        return matchesHashtag && matchesCategory;
+      }
+
+      // 일반 검색 (Enter로 검색한 경우)
+      const matchesSearch =
+        searchTerm === "" ||
+        recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recipe.content.toLowerCase().includes(searchTerm.toLowerCase());
+
       const matchesCategory =
         selectedCategory === "전체 보기" ||
         recipe.category === selectedCategory;
-      return matchesHashtag && matchesCategory;
-    }
 
-    // 일반 검색 (Enter로 검색한 경우)
-    const matchesSearch =
-      searchTerm === "" ||
-      recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      recipe.content.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesCategory =
-      selectedCategory === "전체 보기" || recipe.category === selectedCategory;
-
-    return matchesSearch && matchesCategory;
-  });
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      if (sortType === "latest") {
+        // 최신순: 날짜 기준 내림차순
+        return (
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      } else if (sortType === "likes") {
+        // 좋아요순: 평균 별점 기준 내림차순
+        const aRating =
+          recipeRatings[a.id] !== undefined ? recipeRatings[a.id] : a.rating;
+        const bRating =
+          recipeRatings[b.id] !== undefined ? recipeRatings[b.id] : b.rating;
+        return bRating - aRating;
+      }
+      return 0;
+    });
 
   // 페이지네이션 계산
   const totalPages = Math.ceil(filteredRecipes.length / recipesPerPage);
@@ -302,12 +421,14 @@ export default function RecipesPage() {
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
     setCurrentPage(1); // 카테고리 변경시 첫 페이지로
+    setAnimationKey((prev) => prev + 1); // 애니메이션 재트리거
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // 페이지 변경시 스크롤을 맨 위로
     window.scrollTo({ top: 0, behavior: "smooth" });
+    setAnimationKey((prev) => prev + 1); // 애니메이션 재트리거
   };
 
   // 검색이나 필터 변경시 첫 페이지로 리셋
@@ -315,6 +436,7 @@ export default function RecipesPage() {
     setSearchTerm(term);
     setSelectedHashtag(""); // 해시태그 필터 초기화
     setCurrentPage(1); // 첫 페이지로
+    setAnimationKey((prev) => prev + 1); // 애니메이션 재트리거
   };
 
   const handleHashtagClick = (hashtag: string) => {
@@ -322,6 +444,7 @@ export default function RecipesPage() {
     setSearchTerm(""); // 검색어 초기화
     setSearchInput(""); // 검색 입력창 초기화
     setCurrentPage(1); // 첫 페이지로
+    setAnimationKey((prev) => prev + 1); // 애니메이션 재트리거
   };
 
   return (
@@ -331,8 +454,16 @@ export default function RecipesPage() {
         {/* 페이지 헤더 */}
         <div className={styles.pageHeader}>
           <div className={styles.titleSection}>
-            <div className={styles.chefIcon}>👨‍🍳</div>
-            <h1 className={styles.pageTitle}>레시피 게시판</h1>
+            <h1 className={styles.pageTitle}>레시피 게시판　　</h1>
+            <div className={styles.chefIcon}>
+              <Image
+                src="/images/mascot1.JPG"
+                alt="마스코트"
+                width={150}
+                height={150}
+                className={styles.chefIconImage}
+              />
+            </div>
           </div>
 
           <SearchBar
@@ -346,17 +477,62 @@ export default function RecipesPage() {
 
         {/* 카테고리 드롭다운과 글쓰기 버튼 */}
         <div className={styles.actionBar}>
-          <CategoryDropdown
-            selectedCategory={selectedCategory}
-            onCategorySelect={handleCategoryChange}
-          />
-          <Link href="/recipes/write" className={styles.writeButton}>
-            ✏️ 글쓰기
-          </Link>
+          <div className={styles.leftActions}>
+            <CategoryDropdown
+              selectedCategory={selectedCategory}
+              onCategorySelect={handleCategoryChange}
+            />
+            <button
+              className={`${styles.likedOnlyButton} ${
+                showLikedOnly ? styles.active : ""
+              }`}
+              onClick={() => {
+                setShowLikedOnly(!showLikedOnly);
+                setCurrentPage(1); // 첫 페이지로
+                setAnimationKey((prev) => prev + 1); // 애니메이션 재트리거
+              }}
+            >
+              ♥ 좋아요 한 게시글만
+            </button>
+          </div>
+
+          <div className={styles.rightActions}>
+            <Link href="/recipes/write" className={styles.writeButton}>
+              글쓰기
+            </Link>
+
+            {/* 정렬 버튼들 */}
+            <div className={styles.sortButtons}>
+              <button
+                className={`${styles.sortButton} ${
+                  sortType === "latest" ? styles.active : ""
+                }`}
+                onClick={() => {
+                  setSortType("latest");
+                  setCurrentPage(1);
+                  setAnimationKey((prev) => prev + 1);
+                }}
+              >
+                최신순
+              </button>
+              <button
+                className={`${styles.sortButton} ${
+                  sortType === "likes" ? styles.active : ""
+                }`}
+                onClick={() => {
+                  setSortType("likes");
+                  setCurrentPage(1);
+                  setAnimationKey((prev) => prev + 1);
+                }}
+              >
+                좋아요순
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* 현재 필터 상태 표시 */}
-        {(searchTerm || selectedHashtag) && (
+        {(searchTerm || selectedHashtag || showLikedOnly) && (
           <div className={styles.filterStatus}>
             {searchTerm && (
               <span className={styles.filterTag}>
@@ -377,18 +553,52 @@ export default function RecipesPage() {
                 <button onClick={() => setSelectedHashtag("")}>×</button>
               </span>
             )}
+            {showLikedOnly && (
+              <span className={styles.filterTag}>
+                좋아요 한 게시글만
+                <button onClick={() => setShowLikedOnly(false)}>×</button>
+              </span>
+            )}
           </div>
         )}
 
         {/* 레시피 그리드 */}
-        <div className={styles.recipeGrid}>
-          {currentRecipes.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              onHashtagClick={handleHashtagClick}
-            />
-          ))}
+        <div className={styles.recipeGrid} key={animationKey}>
+          {loading
+            ? // 로딩 중일 때 스켈레톤 카드들 표시 (9개)
+              Array.from({ length: 9 }, (_, index) => {
+                const rowIndex = Math.floor(index / 3);
+                return (
+                  <RecipeCardSkeleton
+                    key={`skeleton-${index}`}
+                    index={rowIndex}
+                  />
+                );
+              })
+            : // 실제 레시피 카드들 표시
+              currentRecipes.map((recipe, index) => {
+                // 한 줄에 3개씩 표시되므로, 줄 번호를 계산 (0, 0, 0, 1, 1, 1, 2, 2, 2, ...)
+                const rowIndex = Math.floor(index / 3);
+                // 댓글 기반 평균 별점이 있으면 사용, 없으면 원본 별점 사용
+                const avgRating =
+                  recipeRatings[recipe.id] !== undefined
+                    ? recipeRatings[recipe.id]
+                    : recipe.rating;
+
+                const recipeWithAvgRating = {
+                  ...recipe,
+                  rating: avgRating,
+                };
+
+                return (
+                  <RecipeCard
+                    key={`${animationKey}-${recipe.id}`} // 애니메이션 키와 함께 고유 키 생성
+                    recipe={recipeWithAvgRating}
+                    onHashtagClick={handleHashtagClick}
+                    index={rowIndex} // 줄 번호를 전달
+                  />
+                );
+              })}
         </div>
 
         {/* 검색 결과가 없을 때 */}

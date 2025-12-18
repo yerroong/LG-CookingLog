@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import HeroSlider from "./HeroSlider";
 import styles from "./Hero.module.css";

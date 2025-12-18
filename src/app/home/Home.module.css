@@ -1,0 +1,76 @@
+.titleSection {
+  text-align: center;
+  margin-top: 50px;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.title {
+  font-size: 27px;
+  font-weight: 650;
+  color: #000;
+  line-height: 1.5;
+  position: relative;
+}
+
+.highlight {
+  color: #f36e5c;
+  font-weight: 700;
+}
+
+.cursor {
+  display: inline-block;
+  color: #f36e5c;
+  animation: blink 0.7s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* 반응형 */
+@media (max-width: 1024px) {
+  .titleSection {
+    margin-top: 45px;
+    min-height: 75px;
+  }
+
+  .title {
+    font-size: 25px;
+    padding: 0 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .titleSection {
+    margin-top: 40px;
+    min-height: 70px;
+  }
+
+  .title {
+    font-size: 22px;
+    padding: 0 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .titleSection {
+    margin-top: 35px;
+    min-height: 65px;
+  }
+
+  .title {
+    font-size: 19px;
+    padding: 0 16px;
+    line-height: 1.6;
+  }
+}
