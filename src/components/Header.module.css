@@ -47,34 +47,7 @@
   transition: 0.2s;
 }
 
-/* Dropdown */
-.navDropdownWrapper {
-  position: relative;
-}
 
-.dropdownMenu {
-  position: absolute;
-  top: calc(100% + 22px);
-  left: -50px;
-  background: white;
-  border: 1px solid #e2e2e2;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  display: none;
-  min-width: 150px;
-  text-align: center;
-}
-
-.dropdownMenu a {
-  padding: 8px 0;
-  display: block;
-  color: #a4a4a4;
-  text-decoration: none;
-}
-
-.navDropdownWrapper:hover .dropdownMenu {
-  display: block;
-}
 
 /* RIGHT MENU */
 .pcMenu {

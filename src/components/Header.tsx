@@ -95,12 +95,7 @@ export default function Header() {
           <Link href="/home" className={isActive("/home")}>홈</Link>
           <span className={styles.separator}>|</span>
 
-          <div className={styles.navDropdownWrapper}>
-            <Link href="/recipes" className={isActive("/recipes")}>레시피</Link>
-            <div className={styles.dropdownMenu}>
-              <Link href="/recipes">좋아요 한 레시피</Link>
-            </div>
-          </div>
+          <Link href="/recipes" className={isActive("/recipes")}>레시피</Link>
 
           <span className={styles.separator}>|</span>
 
@@ -157,9 +152,8 @@ export default function Header() {
       <div className={`${styles.mobileMenu} ${open ? styles.open : ""}`}>
         <Link href="/home" onClick={() => setOpen(false)}>홈</Link>
         <Link href="/recipes" onClick={() => setOpen(false)}>레시피</Link>
-        <Link href="/recipes" onClick={() => setOpen(false)}>좋아요 한 레시피</Link>
-        <Link href="/calorie" onClick={() => setOpen(false)}>칼로리 분석</Link>
-        <Link href="/evnet" onClick={() => setOpen(false)}>이벤트</Link>
+        <Link href="/chat" onClick={() => setOpen(false)}>쿠킹봇</Link>
+        <Link href="/event" onClick={() => setOpen(false)}>이벤트</Link>
 
         {!isLoggedIn ? (
           <Link href="/login" onClick={() => setOpen(false)}>
