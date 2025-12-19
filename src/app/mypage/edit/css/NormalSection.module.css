@@ -17,7 +17,8 @@
   display: flex;
   flex-direction: column;
   width: 50%;
-  gap: 5px;
+  gap: 10px;
+  margin-bottom: 50px;
 }
 
 .main h4 {
@@ -25,7 +26,6 @@
 }
 
 .main input {
-  margin-bottom: 10px;
   color: #bbb;
   height: 44px;
   padding: 0 14px;
@@ -46,22 +46,59 @@
   margin-bottom: 10px;
 }
 
-.main button {
-  border-radius: 5px;
-  border: none;
-  padding: 10px;
-  margin-top: 10px;
-  margin-bottom: 60px;
-  background-color: #F36E5C;
-  font-weight: bold;
-  color: white;
-}
-
 .main button:hover {
   background-color: #FF6060;
   transition: background-color 0.2s ease;
 }
 
+/* 닉네임 입력 + 버튼 한 줄 */
+.row {
+  display: flex;
+  align-items: center;
+  width: 100%;           
+  gap: 10px;
+  margin-bottom: 20px;
+}
 
+/* input은 flex-grow로 남는 전체 공간 차지 */
+.row input {
+  flex: 1;
+}
 
+.checkBtn,
+.saveBtn {
+  padding: 0 14px;
+  background-color: #F36E5C;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  white-space: nowrap;
+  cursor: pointer;
+}
 
+.checkBtn:hover {
+  background-color: #FF6060;
+}
+
+.checkBtn:disabled {
+  background-color: #f1a7a0;
+  cursor: not-allowed;
+}
+
+.main p {
+  margin-top: -20px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* 성공 메시지 */
+.successMsg {
+  color: #28a745;
+}
+
+/* 실패 메시지 */
+.errorMsg {
+  color: #FF6060;
+}
