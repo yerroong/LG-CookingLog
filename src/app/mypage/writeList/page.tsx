@@ -46,7 +46,7 @@ const Page = () => {
         {/* 총 게시글 수 표시 */}
         {postCount !== null && (
           <div className={css.totalCount}>
-            총 게시글 수: {postCount}개
+            총 게시글 수: <span>{postCount}</span>개
           </div>
         )}
 
