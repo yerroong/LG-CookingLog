@@ -45,7 +45,7 @@ const Page = () => {
         {/* 총 댓글 수 표시 */}
         {commentCount !== null && (
           <div className={css.totalCount}>
-            총 댓글 수: {commentCount}개
+            총 댓글 수: <span>{commentCount}</span>개
           </div>
         )}
 
