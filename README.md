@@ -66,7 +66,6 @@ npm run dev
 * Groq LLM (LLaMA 계열)
 * Google Cloud Vision API
 
----
 
 ## ✨ 핵심 기능
 ### 회원
@@ -89,10 +88,8 @@ npm run dev
 * 음식 사진 업로드 시 음식 추정 및 칼로리 분석
 * 레시피·요리 관련 질문 응답 AI 쿠킹봇 제공
 
----
 
 ## 🌱 브랜치 전략
-
 ```
 main
  └─ develop
@@ -102,20 +99,16 @@ main
 * 기능 단위 `feature` 브랜치 개발
 * `develop` 병합 후 `main` 반영
 
----
 
 ## 🖤 커밋 메시지 컨벤션
-
 ```
 feat: 기능 요약
 
 - 변경 내용 요약
 ```
-
 **타입**
 등`feat`, `fix`, `docs`, `design`, `refactor`, `chore`
 
----
 
 ## 📅 개발 일정
 
