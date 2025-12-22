@@ -140,18 +140,22 @@ feat: 기능 요약
 
 ---
 
-## ✅ 프로젝트 결과
+## 🔗 프로젝트 결과 및 링크
 <img width="1913" height="871" alt="image" src="https://github.com/user-attachments/assets/baba0d16-826f-40db-bc17-97583f3709a6" />
-**GitHub:** https://github.com/yerroong/LG-CookingLog
-**Notion:** https://www.notion.so/yerin1412/2-1-2-2c3389b3e03980f59fe8e2e81e321dcb
-**vercel:** https://lg-cooking-log-q9bu.vercel.app/home
-**Figma:** https://www.figma.com/design/GkoiAayV0ldboQNDI2mGX1/%EC%BF%A0%ED%82%B9%EB%A1%9C%EA%B7%B8?node-id=0-1&p=f&t=1kSNb9kNcjQyaGIt-0
+
+- **GitHub**  
+  https://github.com/yerroong/LG-CookingLog
+  
+- **배포 사이트 (Vercel)**  
+  https://lg-cooking-log-q9bu.vercel.app/home
+
+- **Figma (UI/UX 디자인)**  
+  https://www.figma.com/design/GkoiAayV0ldboQNDI2mGX1/%EC%BF%A0%ED%82%B9%EB%A1%9C%EA%B7%B8
+
+- **Notion (기획 및 협업 문서)**  
+  https://www.notion.so/yerin1412/2-1-2-2c3389b3e03980f59fe8e2e81e321dcb
 
 * 사용자 참여 기반 레시피 커뮤니티 구현
 * Kotlin + Spring Boot 기반 안정적인 백엔드 API 구축
 * AI를 활용한 음식 분석 및 요리 보조 기능 제공
 * 프론트엔드 중심 팀 협업 및 실무 흐름 경험
-
-### ✨ 한 줄 요약> **“Kotlin 백엔드와 AI 요리 도우미를 결합한 사용자 참여형 레시피 플랫폼”**
-
-�허브 공개용으로 딱 좋은 상태**야 👍
