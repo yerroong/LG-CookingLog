@@ -135,6 +135,10 @@ feat: 기능 요약
 ## 🔗 프로젝트 결과 및 링크
 <img width="1913" height="871" alt="image" src="https://github.com/user-attachments/assets/baba0d16-826f-40db-bc17-97583f3709a6" />
 
+**시연영상:**
+https://github.com/user-attachments/assets/1f9e7891-1d56-421a-a8e9-a550fcb2e06f
+
+
 - **GitHub**  
   https://github.com/yerroong/LG-CookingLog
   
